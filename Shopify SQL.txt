@@ -1,0 +1,72 @@
+Answers to Shopify Internship Summer 2022 SQL Questions
+
+
+1. How many orders were shipped by Speedy Express in total?
+2. What is the last name of the employee with the most orders?
+3. What product was ordered the most by customers in Germany?
+
+
+#a. How many orders were shipped by Speedy Express in total?
+
+
+Select COUNT(DISTINCT OrderID)
+From Orders o inner join Shippers s
+ON o.ShipperID=s.ShipperID
+where s.ShipperName="Speedy Express"
+
+
+#the answer is 54
+
+
+#b. What is the last name of the employee with the most orders?
+
+
+Select e.LastName, Count(Distinct OrderID) as numberoforders
+From Orders o Inner Join Employees e
+ON e.EmployeeID = o.EmployeeID
+GROUP BY e.LastName
+ORDER  By numberoforders DESC
+LIMIT 1
+
+
+#the answer is peacock 40
+
+
+#c. What product was ordered the most by customers in Germany?
+
+
+With German_orders  (country,OrderID) as
+(   Select customers.country as country, orders.OrderID as OrderID
+    From customers inner Join orders
+   On customers.CustomerID= orders.customerID
+   Where country="Germany"
+),
+
+
+productID_ordered (OrderID,name,Quantity) as
+
+
+(Select Orders.orderID as OrderID, Products.ProductName as name,OrderDetails.Quantity as Quantity
+From Orders Left Join OrderDetails
+On Orders.OrderID= OrderDetails.OrderID
+Left Join Products on OrderDetails.ProductID=Products.ProductID
+
+
+)
+
+
+Select p.name,sum(Quantity)as TotalQuantity
+From German_orders g Left Join productID_ordered p
+On g.OrderID=p.OrderID
+Group by p.name
+Order by TotalQuantity DESC
+Limit 1
+
+
+
+
+Answer is  Boston Crab Meat and it was ordered 160 times
+
+
+I used two CTEs to pull in the German orders and then get a second table that has the order ID ,product name of the items in each order and the quantity of items. 
+Afterwards, I created the outer query that uses left join to search the second table for only german orders, grouped the result by the product names and calculated the number of times each product was ordered using sum.
